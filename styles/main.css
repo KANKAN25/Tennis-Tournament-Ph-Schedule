@@ -1,0 +1,454 @@
+.app {
+  --app-bg: #0a0f0a;
+  --app-card: #161d16;
+  --app-accent: #c8f04a;
+  --app-text: #e8f5e8;
+  --app-muted: #5a7a5a;
+  --app-border: #1e2d1e;
+  --app-live: #ff4a4a;
+  --app-danger: #ff9a9a;
+  background: var(--app-bg);
+  color: var(--app-text);
+  font-family: 'DM Sans', sans-serif;
+  margin: 0;
+  min-height: 100vh;
+}
+
+.app__background {
+  background:
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(200, 240, 74, .05) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 10% 80%, rgba(74, 240, 138, .04) 0%, transparent 60%);
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 0;
+}
+
+.calendar-page {
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: 980px;
+  padding: 0 20px 60px;
+  position: relative;
+  z-index: 1;
+}
+
+.calendar-page__header {
+  align-items: flex-end;
+  border-bottom: 1px solid var(--app-border);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  padding: 50px 0 30px;
+}
+
+.calendar-page__title {
+  color: var(--app-accent);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 8vw, 80px);
+  letter-spacing: 2px;
+  line-height: .9;
+  margin: 0;
+}
+
+.calendar-page__subtitle {
+  color: var(--app-muted);
+  font-size: 12px;
+  letter-spacing: 3px;
+  margin: 8px 0 0;
+  text-transform: uppercase;
+}
+
+.calendar-page__footer {
+  border-top: 1px solid var(--app-border);
+  color: var(--app-muted);
+  font-size: 11px;
+  letter-spacing: 1px;
+  margin-top: 50px;
+  padding-top: 20px;
+  text-align: center;
+}
+
+.clock {
+  text-align: right;
+}
+
+.clock__label {
+  color: var(--app-muted);
+  font-size: 11px;
+  letter-spacing: 3px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.clock__time {
+  color: var(--app-accent);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.clock__date {
+  color: var(--app-muted);
+  font-size: 12px;
+  margin: 2px 0 0;
+}
+
+.filter-bar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.filter-bar__button {
+  background: none;
+  border: 1px solid var(--app-border);
+  border-radius: 100px;
+  color: var(--app-muted);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 8px 18px;
+  transition: all .2s;
+}
+
+.filter-bar__button:hover,
+.filter-bar__button--active {
+  background: var(--app-accent);
+  border-color: var(--app-accent);
+  color: var(--app-bg);
+  font-weight: 500;
+}
+
+.filter-bar__count {
+  color: var(--app-muted);
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.match-group {
+  margin-bottom: 40px;
+}
+
+.match-group__header {
+  align-items: center;
+  border-bottom: 1px solid var(--app-border);
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+}
+
+.match-group__name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.match-group__category {
+  color: var(--app-muted);
+  font-size: 11px;
+  letter-spacing: 2px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.match-card {
+  align-items: center;
+  animation: match-card-rise .35s ease both;
+  background: var(--app-card);
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr auto 1fr auto;
+  margin-bottom: 8px;
+  padding: 16px 20px;
+  transition: border-color .2s, transform .15s;
+}
+
+.match-card:hover {
+  border-color: rgba(200, 240, 74, .35);
+  transform: translateY(-1px);
+}
+
+.match-card--live {
+  background: linear-gradient(135deg, var(--app-card), rgba(255, 74, 74, .05));
+  border-color: rgba(255, 74, 74, .4);
+}
+
+.match-card--done {
+  opacity: .5;
+}
+
+.match-card__player {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.match-card__player--right {
+  text-align: right;
+}
+
+.match-card__player-name {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.match-card__player-country {
+  color: var(--app-muted);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  margin: 1px 0 0;
+  text-transform: uppercase;
+}
+
+.match-card__center {
+  min-width: 100px;
+  padding: 0 4px;
+  text-align: center;
+}
+
+.match-card__versus {
+  color: var(--app-muted);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.match-card__sets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.match-card__set-score {
+  color: var(--app-accent);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+.match-card__total-score {
+  color: var(--app-accent);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.match-card__round {
+  color: var(--app-muted);
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin: 3px 0 0;
+  text-transform: uppercase;
+}
+
+.match-card__time {
+  min-width: 115px;
+  text-align: right;
+}
+
+.match-card__start-time {
+  color: var(--app-accent);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.match-card__time-label {
+  color: var(--app-muted);
+  font-size: 10px;
+  letter-spacing: 2px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.match-card__start-date {
+  color: var(--app-muted);
+  font-size: 11px;
+  margin: 2px 0 0;
+}
+
+.match-card__live-badge {
+  align-items: center;
+  background: var(--app-live);
+  border-radius: 100px;
+  color: #fff;
+  display: inline-flex;
+  font-size: 9px;
+  font-weight: 700;
+  gap: 5px;
+  letter-spacing: 2px;
+  margin: 5px 0 0;
+  padding: 2px 8px;
+  text-transform: uppercase;
+}
+
+.match-card__live-dot {
+  animation: match-card-blink 1s infinite;
+  background: #fff;
+  border-radius: 50%;
+  height: 5px;
+  width: 5px;
+}
+
+.match-card__done-badge {
+  color: var(--app-muted);
+  display: inline-block;
+  font-size: 9px;
+  letter-spacing: 2px;
+  margin: 4px 0 0;
+  text-transform: uppercase;
+}
+
+.calendar-loading {
+  color: var(--app-muted);
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.calendar-loading__spinner {
+  animation: calendar-loading-rotate .8s linear infinite;
+  border: 2px solid var(--app-border);
+  border-radius: 50%;
+  border-top-color: var(--app-accent);
+  height: 40px;
+  margin: 0 auto 20px;
+  width: 40px;
+}
+
+.calendar-loading__label {
+  margin: 0;
+}
+
+.calendar-message {
+  color: var(--app-muted);
+  font-size: 14px;
+  line-height: 2;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.calendar-message--error {
+  background: rgba(255, 74, 74, .08);
+  border: 1px solid rgba(255, 74, 74, .3);
+  border-radius: 8px;
+  color: var(--app-danger);
+  margin-bottom: 16px;
+  padding: 20px 24px;
+  text-align: left;
+}
+
+.calendar-message__title {
+  margin: 0;
+}
+
+.calendar-message__detail {
+  margin: 0;
+}
+
+.refresh-button {
+  align-items: center;
+  background: none;
+  border: 1px solid var(--app-border);
+  border-radius: 100px;
+  color: var(--app-muted);
+  cursor: pointer;
+  display: flex;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  gap: 8px;
+  letter-spacing: 1px;
+  margin: 24px auto 0;
+  padding: 10px 24px;
+  transition: all .2s;
+}
+
+.refresh-button:hover {
+  border-color: var(--app-accent);
+  color: var(--app-accent);
+}
+
+.refresh-button:disabled {
+  cursor: default;
+  opacity: .4;
+}
+
+.refresh-button__icon {
+  display: inline-block;
+}
+
+.refresh-button__icon--spinning {
+  animation: calendar-loading-rotate .6s linear infinite;
+}
+
+@keyframes match-card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes match-card-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .2;
+  }
+}
+
+@keyframes calendar-loading-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 620px) {
+  .calendar-page__header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .clock {
+    text-align: left;
+  }
+
+  .match-card {
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .match-card__time {
+    align-items: center;
+    border-top: 1px solid var(--app-border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    grid-column: 1 / -1;
+    justify-content: center;
+    padding-top: 10px;
+    text-align: center;
+  }
+}

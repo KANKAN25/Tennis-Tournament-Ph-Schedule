@@ -1,31 +1,22 @@
 const http  = require('http');
 const https = require('https');
+const fs    = require('fs');
+const path  = require('path');
+const { discoverActiveTournaments } = require('./services/tournament-discovery-service');
 
-const API_KEY = 'hXUYxicf1Ukr6YdVxmKXZdudyEP7Cu6SP9FJYEUf';
+const API_KEY = 'Hel3cTXsnzvdAsBU9rAa0lfRvuFsAbLhlzWdc8jK';
 const PORT    = 3456;
-
-// ── Hardcoded active tournaments for 2026 ──────────────────────
-// Format: { cat, name, path }
-// path = "category-slug:catId/tournament-slug:tournamentId"
-// Add/remove tournaments here as the season progresses.
-const TOURNAMENTS = [
-  // ATP
-  { cat:'ATP Singles', name:'ATP Dubai',    path:'atp-singles:5724/dubai:xKbLXKij' },
-  { cat:'ATP Singles', name:'ATP Acapulco', path:'atp-singles:5724/acapulco:8hzzdqhG' },
-  { cat:'ATP Singles', name:'ATP Rotterdam',path:'atp-singles:5724/rotterdam:tOyBUwDf' },
-  { cat:'ATP Singles', name:'ATP Marseille',path:'atp-singles:5724/marseille:8QSFGZkJ' },
-  { cat:'ATP Singles', name:'ATP Doha',     path:'atp-singles:5724/doha:faSVFPKp' },
-  // WTA
-  { cat:'WTA Singles', name:'WTA Dubai',    path:'wta-singles:5725/dubai:CWzMo70M' },
-  { cat:'WTA Singles', name:'WTA Doha',     path:'wta-singles:5725/doha:CrwZIQlO' },
-  { cat:'WTA Singles', name:'WTA Abu Dhabi',path:'wta-singles:5725/abu-dhabi:lKJiHgVg' },
-  { cat:'WTA Singles', name:'WTA Hua Hin',  path:'wta-singles:5725/hua-hin:rNvts6S1' },
-];
+const ROOT_DIR = __dirname;
+const STATIC_TYPES = {
+  '.css': 'text/css; charset=utf-8',
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+};
 
 const YEAR = 2026;
 
 function apiGet(path) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     https.get({
       hostname: 'api.sportdb.dev',
       path,
@@ -34,11 +25,25 @@ function apiGet(path) {
       let d = '';
       res.on('data', c => d += c);
       res.on('end', () => {
+        if (res.statusCode >= 400) return reject(new Error(getApiErrorMessage(res.statusCode, d)));
         try { resolve(JSON.parse(d)); }
         catch(e) { resolve(null); }
       });
-    }).on('error', () => resolve(null));
+    }).on('error', error => reject(error));
   });
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function getApiErrorMessage(statusCode, body) {
+  const fallback = `SportDB error ${statusCode}`;
+  try {
+    return JSON.parse(body).detail || fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 function parseMatches(items, cat, tournament) {
@@ -95,6 +100,15 @@ async function fetchTournament({ cat, name, path }) {
   });
 }
 
+async function fetchTournaments(tournaments) {
+  const results = [];
+  for (const tournament of tournaments) {
+    results.push(await fetchTournament(tournament));
+    await delay(400);
+  }
+  return results;
+}
+
 // Cache
 let cache = null;
 let cacheAt = 0;
@@ -106,11 +120,11 @@ async function getMatches(force = false) {
     return cache;
   }
 
-  console.log(`\n[fetch] Loading ${TOURNAMENTS.length} tournaments...`);
+  const tournaments = await discoverActiveTournaments(force);
+  console.log(`\n[fetch] Loading ${tournaments.length} active tournaments...`);
   const start = Date.now();
 
-  // Fetch all tournaments in parallel
-  const results = await Promise.all(TOURNAMENTS.map(fetchTournament));
+  const results = await fetchTournaments(tournaments);
   let all = results.flat();
 
   // Sort: live → upcoming by time → finished
@@ -128,26 +142,56 @@ async function getMatches(force = false) {
   return all;
 }
 
+function sendJson(res, statusCode, payload) {
+  res.writeHead(statusCode, {
+    'Access-Control-Allow-Origin': '*',
+    'Content-Type': 'application/json',
+  });
+  res.end(JSON.stringify(payload));
+}
+
+function getStaticFilePath(urlPath) {
+  const requestPath = urlPath === '/' ? '/index.html' : urlPath;
+  const filePath = path.normalize(path.join(ROOT_DIR, requestPath));
+  const relativePath = path.relative(ROOT_DIR, filePath);
+  return relativePath.startsWith('..') ? null : filePath;
+}
+
+function getContentType(filePath) {
+  return STATIC_TYPES[path.extname(filePath)] || 'application/octet-stream';
+}
+
+function sendStatic(req, res) {
+  const urlPath = new URL(req.url, `http://localhost:${PORT}`).pathname;
+  const filePath = getStaticFilePath(urlPath);
+  if (!filePath || !fs.existsSync(filePath)) return sendJson(res, 404, { error: 'Not found' });
+
+  res.writeHead(200, { 'Content-Type': getContentType(filePath) });
+  fs.createReadStream(filePath).pipe(res);
+}
+
+async function sendMatches(req, res) {
+  const force = req.url.includes('refresh=1');
+  const matches = await getMatches(force);
+  sendJson(res, 200, { matches, count: matches.length });
+}
+
 // ── HTTP server ────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Content-Type', 'application/json');
-
-  const force = req.url.includes('refresh=1');
+  const urlPath = new URL(req.url, `http://localhost:${PORT}`).pathname;
 
   try {
-    const matches = await getMatches(force);
-    res.end(JSON.stringify({ matches, count: matches.length }));
+    if (urlPath === '/matches') return await sendMatches(req, res);
+    sendStatic(req, res);
   } catch(err) {
     console.error('[error]', err.message);
-    res.writeHead(500);
-    res.end(JSON.stringify({ error: err.message }));
+    sendJson(res, 500, { error: err.message });
   }
 });
 
 server.listen(PORT, () => {
   console.log(`\n✅  Tennis PH Time — http://localhost:${PORT}`);
-  console.log(`    Open index.html in your browser!\n`);
+  console.log(`    Open http://localhost:${PORT} in your browser!\n`);
   // Warm up cache on start
   getMatches(true).catch(console.error);
 });
