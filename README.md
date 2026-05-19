@@ -61,23 +61,3 @@ SportDB.dev API (Flashscore data)
 The browser can't call the SportDB API directly due to CORS restrictions, so `server.js` acts as a local proxy — it fetches the data server-side and passes it to the frontend.
 
 ---
-
-## Adding / Updating Tournaments
-
-At the top of `server.js`, there's a `TOURNAMENTS` array. Add or remove entries as tournaments come and go throughout the season:
-
-```js
-const TOURNAMENTS = [
-  { cat:'ATP Singles', name:'ATP Dubai',    path:'atp-singles:5724/dubai:xKbLXKij' },
-  { cat:'WTA Singles', name:'WTA Dubai',    path:'wta-singles:5725/dubai:CWzMo70M' },
-  // add more here...
-];
-```
-
-To find a tournament's path, check the [SportDB.dev API](https://sportdb.dev) and look up the slug and ID for the category and tournament you want.
-
----
-
-## API Key
-
-The API key is hardcoded in `server.js`
